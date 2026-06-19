@@ -1,0 +1,55 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage / instrumentation
+.nyc_output/
+coverage/
+
+# Build directories
+dist/
+build/
+.tmp/
+.cache/
+.parcel-cache/
+
+# Dependency directories
+/.pnp/
+.pnp.js
+.npm/
+
+# Environment variables
+.env
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+
+# SQLite runtime database (this project's actual data file)
+data/*.db
+data/*.sqlite
+data/*.sqlite3
