@@ -7,6 +7,10 @@ fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = new Database(dbPath);
 
 // schema
+// idempotency_key has a UNIQUE constraint — this is what makes our
+// idempotency logic in signals.js atomic and race-safe. SQLite enforces
+// this at insert time, so two concurrent inserts with the same key can
+// never both succeed.
 db.exec(`
 CREATE TABLE IF NOT EXISTS signals (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +23,8 @@ CREATE TABLE IF NOT EXISTS signals (
 CREATE INDEX IF NOT EXISTS idx_user_created ON signals(user_id, created_at);
 `);
 
-// failure simulation
+// failure simulation — used to test retry/backoff behavior (Task 3).
+// Controlled via DB_FAIL_RATE env var (0 to 1).
 function maybeFail() {
   const rate = Number(process.env.DB_FAIL_RATE || 0);
   if (rate > 0 && Math.random() < rate) {
@@ -29,6 +34,11 @@ function maybeFail() {
   }
 }
 
+// Inserts a signal row. On a duplicate idempotency_key, better-sqlite3
+// throws an error with code 'SQLITE_CONSTRAINT_UNIQUE' (or message
+// containing "UNIQUE constraint failed"). signals.js relies on this
+// to distinguish "duplicate key" (expected, not a real error) from
+// genuine DB failures (simulated above via maybeFail()).
 export function insertSignal(userId, type, payload, idemKey, nowMs) {
   maybeFail();
   const stmt = db.prepare(
